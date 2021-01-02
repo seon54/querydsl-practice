@@ -1,5 +1,6 @@
 package study.querydsl;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.ExpressionUtils;
@@ -635,6 +636,43 @@ public class QuerydslBasicTest {
         List<String> result = queryFactory
                 .select(member.username).distinct()
                 .from(member)
+                .fetch();
+    }
+
+    /**
+     * 동적 쿼리
+     * 1. BooleanBuilder
+     * 2. Where 다중 파라미터 사용
+     */
+
+    @Test
+    public void booleanBuilder() {
+        String usernameParam = "member1";
+//        Integer ageParam = 10;
+        Integer ageParam = null;
+
+        List<Member> result = searchMember1(usernameParam, ageParam);
+        assertThat(result.size()).isEqualTo(1);
+    }
+
+    private List<Member> searchMember1(String usernameCond, Integer ageCond) {
+        BooleanBuilder builder = new BooleanBuilder();
+
+        // username 이 필수조건일 경우 생성자에 추가할 수 있음
+        // BooleanBuilder builder = new BooleanBuilder(member.username.eq(usernameCond));
+
+        if (usernameCond != null) {
+            builder.and(member.username.eq(usernameCond));
+        }
+
+        if (ageCond != null) {
+            builder.and(member.age.eq(ageCond));
+        }
+
+
+        return queryFactory
+                .selectFrom(member)
+                .where(builder)
                 .fetch();
     }
 }
