@@ -8,12 +8,14 @@ import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import org.apache.tomcat.util.http.fileupload.MultipartStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import study.querydsl.dto.MemberDto;
+import study.querydsl.dto.QMemberDto;
 import study.querydsl.dto.UserDto;
 import study.querydsl.entity.Member;
 import study.querydsl.entity.QMember;
@@ -592,6 +594,8 @@ public class QuerydslBasicTest {
 
     @Test
     public void findUserDtoByConstructor() {
+        // runtime error
+
         List<UserDto> result = queryFactory
                 .select(Projections.constructor(UserDto.class,
                         member.username,
@@ -604,4 +608,33 @@ public class QuerydslBasicTest {
         }
     }
 
+    @Test
+    public void findDtoByQueryProjection() {
+
+        /*
+        (장점)
+        compile error
+
+        (단점)
+        q 파일 생성해야함
+        DTO -> Querydsl 의존성 생김
+        */
+
+        List<MemberDto> result = queryFactory
+                .select(new QMemberDto(member.username, member.age))
+                .from(member)
+                .fetch();
+
+        for (MemberDto memberDto : result) {
+            System.out.println("memberDto = " + memberDto);
+        }
+    }
+
+    @Test
+    public void distinct() {
+        List<String> result = queryFactory
+                .select(member.username).distinct()
+                .from(member)
+                .fetch();
+    }
 }
